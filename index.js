@@ -1,5 +1,5 @@
 const WebTorrent = require('webtorrent')
-const {WebProperty, verify} = require('btp-property')
+const {WebProperty, verify} = require('bt-fetch-property')
 const fs = require('fs-extra')
 const path = require('path')
 const crypto = require('crypto')

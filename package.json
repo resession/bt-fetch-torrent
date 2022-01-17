@@ -1,0 +1,17 @@
+{
+  "name": "bt-fetch-torrent",
+  "version": "1.3.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bt-fetch-property": "^1.1.0",
+    "fs-extra": "^10.0.0",
+    "webtorrent": "^1.5.8"
+  }
+}

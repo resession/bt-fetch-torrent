@@ -8,7 +8,7 @@ const crypto = require('crypto')
 const checkHash = new RegExp('^[a-fA-F0-9]{40}$')
 const checkAddress = new RegExp('^[a-fA-F0-9]{64}$')
 const checkTitle = new RegExp('^[a-f0-9]{32}$')
-const defOpts = {folder: __dirname, storage: 'storage', magnet: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true}
+const defOpts = {folder: __dirname, storage: 'storage', magnet: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true, clear: false}
 
 async function keepUpdated(self){
     self._readyToGo = false
@@ -27,6 +27,15 @@ async function keepUpdated(self){
 }
 
 async function startUp(self){
+    if(self._status.clear){
+        try {
+            await fs.emptyDir(self._external)
+            await fs.emptyDir(self._internal)
+            await self.webproperty.clearData()
+        } catch (error) {
+            console.log(error)
+        }
+    }
     if(self._status.initial){
         let checkInternal = await fs.readdir(self._internal, {withFileTypes: false})
         for(let i = 0;i < checkInternal.length;i++){
@@ -183,19 +192,19 @@ class BTFetchTorrent {
         finalOpts.folder = path.resolve(finalOpts.folder)
         fs.ensureDirSync(finalOpts.folder)
 
-        this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial}
-        this._config = finalOpts.folder + path.sep + 'config.json'
-        if(fs.pathExistsSync(this._config)){
-            try {
-                this._status = fs.readJsonSync(this._config)
-            } catch (error) {
-                console.log('config file is not working, using default config', error)
-                this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial}
-                fs.writeJsonSync(this._config, this._status)
-            }
-        } else {
-            fs.writeJsonSync(this._config, this._status)
-        }
+        this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial, clear: finalOpts.clear}
+        // this._config = finalOpts.folder + path.sep + 'config.json'
+        // if(fs.pathExistsSync(this._config)){
+        //     try {
+        //         this._status = fs.readJsonSync(this._config)
+        //     } catch (error) {
+        //         console.log('config file is not working, using default config', error)
+        //         this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial, clear: finalOpts.clear}
+        //         fs.writeJsonSync(this._config, this._status)
+        //     }
+        // } else {
+        //     fs.writeJsonSync(this._config, this._status)
+        // }
 
         this._storage = finalOpts.folder + path.sep + finalOpts.storage
         this._external = this._storage + path.sep + finalOpts.external
@@ -483,22 +492,11 @@ class BTFetchTorrent {
         return {torrent: checkTorrent, secret: tempSecret}
     }
     
-    async clearData(data){
+    clearData(){
         for(let i = 0;i < this.webtorrent.torrents.length;i++){
             this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: false})
         }
-        if(data){
-            try {
-                await fs.emptyDir(this._external)
-                await fs.emptyDir(this._internal)
-                await this.webproperty.clearData()
-            } catch (error) {
-                console.log(error)
-            }
-            return 'data was removed'
-        } else {
-            return 'data was stopped'
-        }
+        return 'data was stopped'
     }
 
     stopTitle(title){
@@ -628,40 +626,40 @@ class BTFetchTorrent {
         }
         return address + ' was removed'
     }
-    configure(data, change){
-        if(typeof(data) !== 'string'){
-            return false
-        } else if(!['current', 'share', 'timeout', 'initial'].includes(data)){
-            return false
-        } else if(data === 'current' && typeof(change) !== 'boolean'){
-            return false
-        } else if(data === 'share' && typeof(change) !== 'boolean'){
-            return false
-        } else if(data === 'timeout' && typeof(change) !== 'number'){
-            return false
-        } else if(data === 'initial' && typeof(change) !== 'boolean'){
-            return false
-        }
-        if(data === 'timeout'){
-            change = change * 1000
-        }
-        this._status[data] = change
-        fs.writeJsonSync(this._config, this._status)
-        return true
-        // try {
-        //     this._status[data] = change
-        //     fs.writeJsonSync(this._config, this._status)
-        //     return 1
-        // } catch (error) {
-        //     console.log(error)
-        //     return -1
-        // }
-    }
-    backToDefault(){
-        this._status = {current: defOpts.current, share: defOpts.share, timeout: defOpts.timeout, initial: defOpts.initial}
-        fs.writeJsonSync(this._config, this._status)
-        return 'status has changed'
-    }
+    // configure(data, change){
+    //     if(typeof(data) !== 'string'){
+    //         return false
+    //     } else if(!['current', 'share', 'timeout', 'initial'].includes(data)){
+    //         return false
+    //     } else if(data === 'current' && typeof(change) !== 'boolean'){
+    //         return false
+    //     } else if(data === 'share' && typeof(change) !== 'boolean'){
+    //         return false
+    //     } else if(data === 'timeout' && typeof(change) !== 'number'){
+    //         return false
+    //     } else if(data === 'initial' && typeof(change) !== 'boolean'){
+    //         return false
+    //     }
+    //     if(data === 'timeout'){
+    //         change = change * 1000
+    //     }
+    //     this._status[data] = change
+    //     fs.writeJsonSync(this._config, this._status)
+    //     return true
+    //     // try {
+    //     //     this._status[data] = change
+    //     //     fs.writeJsonSync(this._config, this._status)
+    //     //     return 1
+    //     // } catch (error) {
+    //     //     console.log(error)
+    //     //     return -1
+    //     // }
+    // }
+    // backToDefault(){
+    //     this._status = {current: defOpts.current, share: defOpts.share, timeout: defOpts.timeout, initial: defOpts.initial}
+    //     fs.writeJsonSync(this._config, this._status)
+    //     return 'status has changed'
+    // }
     // changeTimeOut(data){
     //     if(!data || typeof(data) !== 'number'){
     //         return new Error('data must be a number')

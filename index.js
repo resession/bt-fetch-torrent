@@ -1,5 +1,5 @@
 const WebTorrent = require('webtorrent')
-const {WebProperty, verify} = require('bt-fetch-property')
+const {BTFetchProperty, verify} = require('bt-fetch-property')
 const fs = require('fs-extra')
 const path = require('path')
 const crypto = require('crypto')
@@ -176,7 +176,7 @@ async function startUp(self){
     }
 }
 
-class TorrentProperty {
+class BTFetchTorrent {
     constructor(opts = {}){
         // super()
         const finalOpts = {...defOpts, ...opts}
@@ -210,7 +210,7 @@ class TorrentProperty {
             fs.ensureDirSync(this._internal)
         }
         this.webtorrent = new WebTorrent({dht: {verify}})
-        this.webproperty = new WebProperty({dht: this.webtorrent.dht, folder: finalOpts.folder, magnet: finalOpts.magnet})
+        this.webproperty = new BTFetchProperty({dht: this.webtorrent.dht, folder: finalOpts.folder, magnet: finalOpts.magnet})
         this.webtorrent.on('error', error => {
             console.log(error)
         })
@@ -711,4 +711,4 @@ class TorrentProperty {
     }
 }
 
-module.exports = TorrentProperty
+module.exports = BTFetchTorrent

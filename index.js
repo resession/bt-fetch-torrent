@@ -8,20 +8,23 @@ const crypto = require('crypto')
 const checkHash = new RegExp('^[a-fA-F0-9]{40}$')
 const checkAddress = new RegExp('^[a-fA-F0-9]{64}$')
 const checkTitle = new RegExp('^[a-f0-9]{32}$')
-const defOpts = {folder: __dirname, storage: 'storage', magnet: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true, clear: false}
+const defOpts = {folder: __dirname, storage: 'storage', files: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true, clear: false}
 
 async function keepUpdated(self){
     self._readyToGo = false
     for(let i = 0;i < self.webtorrent.torrents.length;i++){
         if(self.webtorrent.torrents[i].address){
-            try {
-                await self.webproperty.bothGetPut(self.webtorrent.torrents[i])
-                console.log(self.webtorrent.torrents[i].address + ' is good')
-            } catch (error) {
-                console.log(error)
-            }
+            await new Promise((resolve) => {
+                self.webproperty.bothGetPut(self.webtorrent.torrents[i], (error, data) => {
+                    if(error){
+                        resolve(error)
+                    } else {
+                        resolve(data)
+                    }
+                })
+            })
+            await new Promise((resolve, reject) => setTimeout(resolve, 5000))
         }
-        await new Promise((resolve, reject) => setTimeout(resolve, 5000))
     }
     self._readyToGo = true
 }
@@ -219,7 +222,7 @@ class BTFetchTorrent {
             fs.ensureDirSync(this._internal)
         }
         this.webtorrent = new WebTorrent({dht: {verify}})
-        this.webproperty = new BTFetchProperty({dht: this.webtorrent.dht, folder: finalOpts.folder, magnet: finalOpts.magnet})
+        this.webproperty = new BTFetchProperty({dht: this.webtorrent.dht, folder: finalOpts.folder, files: finalOpts.files})
         this.webtorrent.on('error', error => {
             console.log(error)
         })

@@ -8,7 +8,7 @@ const crypto = require('crypto')
 const checkHash = new RegExp('^[a-fA-F0-9]{40}$')
 const checkAddress = new RegExp('^[a-fA-F0-9]{64}$')
 const checkTitle = new RegExp('^[a-f0-9]{32}$')
-const defOpts = {folder: __dirname, storage: 'storage', files: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true, clear: false}
+const defOpts = {folder: __dirname, storage: 'storage', files: 'magnet', external: 'external', internal: 'internal', timeout: 60000, share: false, current: true, initial: true}
 
 async function keepUpdated(self){
     self._readyToGo = false
@@ -30,15 +30,15 @@ async function keepUpdated(self){
 }
 
 async function startUp(self){
-    if(self._status.clear){
-        try {
-            await fs.emptyDir(self._external)
-            await fs.emptyDir(self._internal)
-            await self.webproperty.clearData()
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    // if(self._status.clear){
+    //     try {
+    //         await fs.emptyDir(self._external)
+    //         await fs.emptyDir(self._internal)
+    //         await self.webproperty.clearData()
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }
     if(self._status.initial){
         let checkInternal = await fs.readdir(self._internal, {withFileTypes: false})
         for(let i = 0;i < checkInternal.length;i++){
@@ -195,14 +195,14 @@ class BTFetchTorrent {
         finalOpts.folder = path.resolve(finalOpts.folder)
         fs.ensureDirSync(finalOpts.folder)
 
-        this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial, clear: finalOpts.clear}
+        this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial}
         // this._config = finalOpts.folder + path.sep + 'config.json'
         // if(fs.pathExistsSync(this._config)){
         //     try {
         //         this._status = fs.readJsonSync(this._config)
         //     } catch (error) {
         //         console.log('config file is not working, using default config', error)
-        //         this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial, clear: finalOpts.clear}
+        //         this._status = {current: finalOpts.current, share: finalOpts.share, timeout: finalOpts.timeout, initial: finalOpts.initial}
         //         fs.writeJsonSync(this._config, this._status)
         //     }
         // } else {
